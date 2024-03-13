@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/trackdash/trackdash.iml" filepath="$PROJECT_DIR$/trackdash/trackdash.iml" />
+      <module fileurl="file://$PROJECT_DIR$/trackdash/android/trackdash_android.iml" filepath="$PROJECT_DIR$/trackdash/android/trackdash_android.iml" />
+    </modules>
+  </component>
+</project>
