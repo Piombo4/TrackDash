@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:trackdash/pages/StartActivity.dart';
+import 'package:trackdash/utils/CustomNavigationBar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -26,18 +28,42 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  int _selectedIndex = 1;
+  final List<Widget> pages = [
+    const Scaffold(
+      key: PageStorageKey('Page1'),
+    ),
+    const StartActivity(
+      key: PageStorageKey('Page2'),
+    ),
+    const Scaffold(
+      key: PageStorageKey('Page3'),
+    )
+  ];
+
+  final PageStorageBucket bucket = PageStorageBucket();
+  Widget BottomNavigationBar(int selectedIndex) => CustomBottomNavigation(
+        selectedColor: Colors.greenAccent,
+        selectedLightColor: Colors.greenAccent,
+        itemIcons: [Icons.history, Icons.settings],
+        centerIcon: Icons.mode_of_travel,
+        selectedIndex: _selectedIndex,
+        onItemPressed: _onItemTapped,
+      );
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text("Run"),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[],
-        ),
+      bottomNavigationBar: BottomNavigationBar(_selectedIndex),
+      body: PageStorage(
+        child: pages[_selectedIndex],
+        bucket: bucket,
       ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );
