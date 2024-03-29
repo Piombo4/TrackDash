@@ -19,7 +19,7 @@ class _FirstPageState extends State<FirstPage> {
   void initState() {
     super.initState();
     controller = MapController.withUserPosition(
-        trackUserLocation: UserTrackingOption(
+        trackUserLocation: const UserTrackingOption(
       enableTracking: true,
       unFollowUser: false,
     ));
@@ -31,13 +31,13 @@ class _FirstPageState extends State<FirstPage> {
     width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.only(top: 45, left: 20, right: 20),
+        padding: const EdgeInsets.only(top: 45, left: 20, right: 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ListTile(
+            const ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(
                 "TrackDash",
@@ -55,7 +55,7 @@ class _FirstPageState extends State<FirstPage> {
             SizedBox(
               height: height * 0.02,
             ),
-            Text(
+            const Text(
               "Activity",
               style: TextStyle(
                   color: Colors.black,
@@ -63,14 +63,14 @@ class _FirstPageState extends State<FirstPage> {
                   fontWeight: FontWeight.bold),
             ),
             Container(
-                margin: EdgeInsets.symmetric(vertical: 10),
+                margin: const EdgeInsets.symmetric(vertical: 10),
                 height: height * 0.15,
                 width: width,
                 decoration: BoxDecoration(
                   color: Colors.indigo,
                   borderRadius: BorderRadius.circular(20),
                 )),
-            Text(
+            const Text(
               "Last Run",
               style: TextStyle(
                   color: Colors.black,
@@ -84,14 +84,15 @@ class _FirstPageState extends State<FirstPage> {
                   childAspectRatio: 1.1,
                 ),
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: 4,
                 itemBuilder: (context, index) {
                   return InkWell(
+                    borderRadius: BorderRadius.circular(20),
                     onTap: () {},
                     child: Container(
-                        margin:
-                            EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                        margin: EdgeInsets.symmetric(
+                            vertical: height * 0.01, horizontal: height * 0.01),
                         decoration: BoxDecoration(
                           color: Colors.indigo,
                           borderRadius: BorderRadius.circular(20),
@@ -108,9 +109,9 @@ class _FirstPageState extends State<FirstPage> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20))),
                 onPressed: startRun,
-                child: Text(
+                child: const Text(
                   "Start Run",
-                  style: TextStyle(fontSize: 28, color: Colors.white),
+                  style: TextStyle(fontSize: 25, color: Colors.white),
                 ),
               ),
             ))
@@ -124,7 +125,7 @@ class _FirstPageState extends State<FirstPage> {
     await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => RunningPage(),
+          builder: (context) => const RunningPage(),
         ));
   }
 }
