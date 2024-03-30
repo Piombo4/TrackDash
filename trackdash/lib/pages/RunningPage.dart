@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:trackdash/classes/activity.dart';
@@ -20,6 +21,7 @@ class _RunningPageState extends State<RunningPage>
   late Timer timer;
   late Activity activity;
   late bool isRunning;
+
   @override
   void initState() {
     super.initState();
@@ -30,7 +32,7 @@ class _RunningPageState extends State<RunningPage>
   }
 
   void initialize() {
-    activity = Activity(0, DateTime.now(), 0, Duration(seconds: 1), []);
+    activity = Activity(0, DateTime.now(), 0, Duration.zero, []);
     isRunning = false;
     timer = Timer(Duration.zero, () {});
     controller = MapController.withUserPosition(
@@ -114,32 +116,41 @@ class _RunningPageState extends State<RunningPage>
                 )),
               )),
           Visibility(
-              child: Center(
-                  child: Text(
+              child: Text(
                 timeLeft.toString(),
-                style: TextStyle(fontSize: 100),
-              )),
+                style: TextStyle(
+                    fontSize: 100,
+                    color: Theme.of(context).textTheme.titleMedium?.color),
+              ),
               visible: timeLeft > 0,
               replacement: Positioned(
                 bottom: 0,
                 child: Container(
-                    height: height * 0.18,
+                    alignment: Alignment.topCenter,
+                    height: height * 0.2,
                     width: width * 0.85,
+                    margin: EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(25),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Padding(
                           padding: EdgeInsets.only(top: 10),
-                          child: Text(
+                          child: AutoSizeText(
                             activity.returnFormattedTime(),
-                            style: TextStyle(fontSize: 40, color: Colors.white),
+                            style: TextStyle(
+                                fontSize: 40,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.color),
                           ),
                         ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 30),
-                          child: Divider(),
-                        ),
-                        Table(
+                        Expanded(
+                            child: Table(
                           columnWidths: const <int, TableColumnWidth>{
                             0: FlexColumnWidth(1),
                             1: FlexColumnWidth(1),
@@ -147,37 +158,90 @@ class _RunningPageState extends State<RunningPage>
                           children: [
                             TableRow(children: [
                               Center(
-                                child: Text("Avg Pace min/km",
+                                child: AutoSizeText("5:57",
                                     style: TextStyle(
-                                        fontSize: 18, color: Colors.white)),
+                                      fontSize: 25,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.color,
+                                      fontWeight: FontWeight.bold,
+                                    )),
                               ),
                               Center(
-                                child: Text("Km",
+                                child: AutoSizeText("7.5",
                                     style: TextStyle(
-                                        fontSize: 18, color: Colors.white)),
+                                      fontSize: 25,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.color,
+                                      fontWeight: FontWeight.bold,
+                                    )),
                               )
                             ]),
                             TableRow(children: [
                               Center(
-                                child: Text("5:57",
+                                child: AutoSizeText("PACE",
                                     style: TextStyle(
-                                        fontSize: 25, color: Colors.white)),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.color
+                                            ?.withOpacity(.75))),
                               ),
                               Center(
-                                child: Text("7.5",
+                                child: AutoSizeText("DISTANCE",
                                     style: TextStyle(
-                                        fontSize: 25, color: Colors.white)),
-                              )
-                            ])
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.color
+                                            ?.withOpacity(.75))),
+                              ),
+                            ]),
                           ],
-                        ),
+                        )),
                       ],
-                    ),
-                    margin: EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.indigo,
-                      borderRadius: BorderRadius.circular(20),
                     )),
+              )),
+          Positioned(
+              top: height * 0.715,
+              left: width * 0.67,
+              child: Center(
+                child: IconButton(
+                  style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10))),
+                  onPressed: () {},
+                  icon: Icon(
+                    size: 25,
+                    Icons.stop,
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
+                ),
+              )),
+          Positioned(
+              top: height * 0.715,
+              left: width * 0.77,
+              child: Center(
+                child: IconButton(
+                  style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10))),
+                  onPressed: () {},
+                  icon: Icon(
+                    size: 25,
+                    Icons.pause,
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
+                ),
               )),
           Positioned(
               height: height * 0.06,
@@ -187,15 +251,16 @@ class _RunningPageState extends State<RunningPage>
               child: Center(
                 child: IconButton(
                   style: IconButton.styleFrom(
-                      backgroundColor: Colors.indigo,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10))),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                   icon: Icon(
+                    size: 25,
                     Icons.chevron_left,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
               ))

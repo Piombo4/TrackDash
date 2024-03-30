@@ -14,7 +14,8 @@ Map<int, Color> color = {
 };
 ThemeData app_theme = ThemeData(
     textTheme: const TextTheme(
-        titleMedium: TextStyle(color: Color(0xff1a1c1f)),
+        titleMedium:
+            TextStyle(color: Color(0xff1a1c1f), fontWeight: FontWeight.bold),
         bodySmall: TextStyle(color: Color(0xadf6f8f9)),
         bodyLarge: TextStyle(color: Color(0xfff6f8f9)),
         displayLarge: TextStyle(color: Color(0xfff6f8f9)),
