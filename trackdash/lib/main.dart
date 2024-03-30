@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trackdash/pages/FirstPage.dart';
+import 'package:trackdash/utils/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,10 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: app_theme,
       home: const MyHomePage(),
     );
   }

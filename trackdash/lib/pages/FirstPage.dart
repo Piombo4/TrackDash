@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 
@@ -39,49 +40,39 @@ class _FirstPageState extends State<FirstPage> {
           children: [
             const ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(
+              title: AutoSizeText(
                 "TrackDash",
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
               leading: Icon(
                 Icons.double_arrow_sharp,
-                color: Colors.black,
                 size: 40,
               ),
             ),
             SizedBox(
               height: height * 0.02,
             ),
-            const Text(
+            AutoSizeText(
               "Activity",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
             Container(
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 height: height * 0.15,
                 width: width,
                 decoration: BoxDecoration(
-                  color: Colors.indigo,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
                 )),
-            const Text(
+            AutoSizeText(
               "Last Run",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
             GridView.builder(
                 padding: EdgeInsets.zero,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 1.1,
+                  childAspectRatio: 1.05,
                 ),
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -91,10 +82,10 @@ class _FirstPageState extends State<FirstPage> {
                     borderRadius: BorderRadius.circular(20),
                     onTap: () {},
                     child: Container(
-                        margin: EdgeInsets.symmetric(
-                            vertical: height * 0.01, horizontal: height * 0.01),
+                        margin:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                         decoration: BoxDecoration(
-                          color: Colors.indigo,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(20),
                         )),
                   );
@@ -103,15 +94,18 @@ class _FirstPageState extends State<FirstPage> {
                 child: Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     elevation: 8,
                     minimumSize: Size(width, height * 0.08),
-                    backgroundColor: Colors.greenAccent,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20))),
                 onPressed: startRun,
-                child: const Text(
+                child: AutoSizeText(
                   "Start Run",
-                  style: TextStyle(fontSize: 25, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Theme.of(context).textTheme.titleMedium?.color,
+                  ),
                 ),
               ),
             ))
