@@ -15,10 +15,10 @@ class _FirstPageState extends State<FirstPage> {
   late MapController controller;
   var height;
   var width;
-
   @override
   void initState() {
     super.initState();
+
     controller = MapController.withUserPosition(
         trackUserLocation: const UserTrackingOption(
       enableTracking: true,

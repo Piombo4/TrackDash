@@ -37,6 +37,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_osm_plugin: ^0.70.4
   auto_size_text: ^3.0.0
+  geolocator: ^11.0.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+  geolocator_android: ^4.5.4
 
 dev_dependencies:
   flutter_test:
