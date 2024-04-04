@@ -25,9 +25,15 @@ class _RunningPageState extends State<RunningPage>
   late Timer timer;
   late Activity activity;
   late bool isRunning;
-  final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   late Future<Position> startPosition;
+  Position? testPos;
   late Marker marker;
+  late LocationPermission permission;
+  final LocationSettings locationSettings = LocationSettings(
+    accuracy: LocationAccuracy.reduced,
+    distanceFilter: 20,
+  );
+  late StreamSubscription<Position> positionStream;
 
   @override
   void initState() {
@@ -35,34 +41,29 @@ class _RunningPageState extends State<RunningPage>
     if (mounted) {
       initialize();
     }
-    _getStartPosition();
-  }
-
-  void initialize() {
-    activity = Activity(0, DateTime.now(), 0, Duration.zero, []);
-    isRunning = false;
-    timer = Timer(Duration.zero, () {});
-    mapController = MapController();
   }
 
   @override
   void dispose() {
     timer.cancel();
+    positionStream.cancel();
     super.dispose();
   }
 
-  Future<void> _getStartPosition() {
-    /*final hasPermission = await _handlePermission();
-
-    if (!hasPermission) {
-      return;
-    }*/
-
-    return startPosition = _geolocatorPlatform
-        .getCurrentPosition(
-            locationSettings: AndroidSettings(
-                accuracy: LocationAccuracy.reduced,
-                timeLimit: Duration(milliseconds: 5000)))
+  Future<Position> getStartPos() async {
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    return Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.reduced)
         .then((value) {
       marker = Marker(
           child: Icon(
@@ -77,11 +78,14 @@ class _RunningPageState extends State<RunningPage>
       startCountdown();
       return value;
     });
+  }
 
-    /*_updatePositionList(
-      _PositionItemType.position,
-      position.toString(),
-    );*/
+  void initialize() {
+    startPosition = getStartPos();
+    activity = Activity(0, DateTime.now(), 0, Duration.zero, []);
+    isRunning = false;
+    timer = Timer(Duration.zero, () {});
+    mapController = MapController();
   }
 
   void startCountdown() {
@@ -131,6 +135,18 @@ class _RunningPageState extends State<RunningPage>
                         markers: [marker],
                       ),
                     ]),
+                Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: Text(
+                      testPos != null
+                          ? "${testPos!.latitude} + ${testPos!.longitude}"
+                          : "NULL",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ),
                 Visibility(
                     child: Text(
                       timeLeft.toString(),
@@ -284,16 +300,25 @@ class _RunningPageState extends State<RunningPage>
               ],
             ),
           );
+        } else {
+          print(snapshot.error);
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
       },
     ));
   }
 
   void startActivity() {
     timer = Timer.periodic(Duration(milliseconds: 500), _onTick);
+    positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position? position) {
+      print(position == null
+          ? 'Unknown'
+          : '${position.latitude.toString()}, ${position.longitude.toString()}');
+    });
     isRunning = true;
   }
 
