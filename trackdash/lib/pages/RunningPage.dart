@@ -26,7 +26,7 @@ class _RunningPageState extends State<RunningPage>
   late Activity activity;
   late bool isRunning;
   late Future<Position> startPosition;
-  Position? testPos;
+  String testPos = "NULL";
   late Marker marker;
   late LocationPermission permission;
   final LocationSettings locationSettings = LocationSettings(
@@ -140,9 +140,7 @@ class _RunningPageState extends State<RunningPage>
                   child: Align(
                     alignment: Alignment.topRight,
                     child: Text(
-                      testPos != null
-                          ? "${testPos!.latitude} + ${testPos!.longitude}"
-                          : "NULL",
+                      testPos,
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
@@ -315,9 +313,12 @@ class _RunningPageState extends State<RunningPage>
     positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
             .listen((Position? position) {
-      print(position == null
-          ? 'Unknown'
-          : '${position.latitude.toString()}, ${position.longitude.toString()}');
+              setState(() {
+                testPos = position == null
+                    ? 'null'
+                    : '${position.latitude.toString()}, ${position.longitude.toString()}';
+              });
+
     });
     isRunning = true;
   }
