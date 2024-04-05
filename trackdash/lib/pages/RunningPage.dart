@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:trackdash/classes/activity.dart';
 
 import '../utils/dark_tile_builder.dart';
+import '../widgets/custom_marker.dart';
 
 class RunningPage extends StatefulWidget {
   const RunningPage({Key? key}) : super(key: key);
@@ -46,7 +47,7 @@ class _RunningPageState extends State<RunningPage>
   @override
   void dispose() {
     timer.cancel();
-    positionStream.cancel();
+    positionStream?.cancel();
     super.dispose();
   }
 
@@ -66,11 +67,7 @@ class _RunningPageState extends State<RunningPage>
             desiredAccuracy: LocationAccuracy.reduced)
         .then((value) {
       marker = Marker(
-          child: Icon(
-            Icons.location_on_sharp,
-            color: Theme.of(context).colorScheme.primary,
-            size: 40,
-          ),
+          child: CustomMarker(),
           width: 80,
           height: 80,
           rotate: false,
@@ -313,12 +310,11 @@ class _RunningPageState extends State<RunningPage>
     positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
             .listen((Position? position) {
-              setState(() {
-                testPos = position == null
-                    ? 'null'
-                    : '${position.latitude.toString()}, ${position.longitude.toString()}';
-              });
-
+      setState(() {
+        testPos = position == null
+            ? 'null'
+            : '${position.latitude.toString()}, ${position.longitude.toString()}';
+      });
     });
     isRunning = true;
   }
