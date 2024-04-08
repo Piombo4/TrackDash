@@ -11,7 +11,7 @@ class _CustomMarkerState extends State<CustomMarker>
     with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1000),
+    duration: const Duration(milliseconds: 1200),
   )..repeat();
   late final Animation<double> _scaleAnimation =
       Tween<double>(begin: 0.6, end: 1).animate(_controller);
@@ -31,14 +31,16 @@ class _CustomMarkerState extends State<CustomMarker>
               width: 20 * 1.5,
               height: 20 * 1.5,
               decoration: BoxDecoration(
-                  shape: BoxShape.circle, color: Colors.green.shade300),
+                  shape: BoxShape.circle,
+                  color:
+                      Theme.of(context).colorScheme.primary.withOpacity(0.7)),
             ),
           ),
         ),
         Icon(
           Icons.circle,
           size: 20,
-          color: Colors.green,
+          color: Theme.of(context).colorScheme.primary,
         )
       ],
     );

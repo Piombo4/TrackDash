@@ -1,7 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:hive/hive.dart';
+import 'package:trackdash/classes/activity_DB.dart';
+import 'package:trackdash/widgets/square.dart';
 
+import '../classes/activity.dart';
 import 'RunningPage.dart';
 
 class FirstPage extends StatefulWidget {
@@ -12,18 +15,33 @@ class FirstPage extends StatefulWidget {
 }
 
 class _FirstPageState extends State<FirstPage> {
-  late MapController controller;
   var height;
   var width;
+
+  final box = Hive.box('activityBox');
+  late ActivityDB adb = ActivityDB();
+
+  Activity? lastActivity;
+
+  List<Widget> squares = [
+    Square(icon: Icons.local_fire_department, name: "Calories", value: "-"),
+    Square(icon: Icons.route, name: "Distance", value: "-"),
+    Square(icon: Icons.timer, name: "Time", value: "-"),
+    Square(icon: Icons.show_chart, name: "Pace", value: "-"),
+  ];
+
   @override
   void initState() {
     super.initState();
 
-    controller = MapController.withUserPosition(
-        trackUserLocation: const UserTrackingOption(
-      enableTracking: true,
-      unFollowUser: false,
-    ));
+    if (box.get("ACTIVITYLIST") == null) {
+      adb.createInitialData();
+    } else {
+      adb.loadData();
+    }
+    if (!adb.isDBEmpty()) {
+      lastActivity = adb.activityList.last;
+    }
   }
 
   @override
@@ -68,28 +86,16 @@ class _FirstPageState extends State<FirstPage> {
               "Last Run",
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
-            GridView.builder(
-                padding: EdgeInsets.zero,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.05,
-                ),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 4,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () {},
-                    child: Container(
-                        margin:
-                            EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(20),
-                        )),
-                  );
-                }),
+            GridView(
+              padding: EdgeInsets.zero,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.05,
+              ),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: squares,
+            ),
             Expanded(
                 child: Center(
               child: ElevatedButton(

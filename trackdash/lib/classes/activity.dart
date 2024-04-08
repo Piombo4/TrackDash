@@ -1,17 +1,17 @@
-import 'package:trackdash/classes/position.dart';
+import 'package:latlong2/latlong.dart';
 
 class Activity {
-  double km;
+  double distance;
   DateTime data;
   double calories;
   Duration time;
-  List<Position> route;
+  List<LatLng> route;
 
-  Activity(this.km, this.data, this.calories, this.time, this.route);
+  Activity(this.distance, this.data, this.calories, this.time, this.route);
 
   @override
   String toString() {
-    return 'Activity{km: $km, calories: $calories, time: $time, route: $route}';
+    return 'Activity{distance: $distance, calories: $calories, time: $time, route: $route}';
   }
 
   String returnFormattedTime() {
@@ -19,5 +19,13 @@ class Activity {
     String twoDigitMinutes = twoDigits(time.inMinutes.remainder(60).abs());
     String twoDigitSeconds = twoDigits(time.inSeconds.remainder(60).abs());
     return "${twoDigits(time.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+  }
+
+  String returnPace() {
+    var result = "-";
+    if (distance > 0) {
+      result = (time.inMinutes / distance).toStringAsFixed(2);
+    }
+    return result;
   }
 }

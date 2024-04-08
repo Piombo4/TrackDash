@@ -1,12 +1,14 @@
 import 'dart:async';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hive/hive.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:trackdash/classes/activity.dart';
+import 'package:trackdash/widgets/activity_display.dart';
 
+import '../classes/activity_DB.dart';
 import '../utils/dark_tile_builder.dart';
 import '../widgets/custom_marker.dart';
 
@@ -22,19 +24,26 @@ class _RunningPageState extends State<RunningPage>
   MapController mapController = MapController();
   var height;
   var width;
-  int timeLeft = 5;
-  late Timer timer;
+
+  final double DEFAULT_ZOOM = 19;
+  final double MAX_ZOOM = 19.5;
+  final int COUNTDOWN_START = 5;
+  final int COUNTDOWN_RESUME = 3;
+  final int DISTANCE_FILTER = 25;
+  final LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.reduced;
+  final box = Hive.box('activityBox');
+
+  late Timer activityTimer;
+  late Timer countdownTimer;
+  late int timeLeft;
   late Activity activity;
   late bool isRunning;
   late Future<Position> startPosition;
-  String testPos = "NULL";
   late Marker marker;
   late LocationPermission permission;
-  final LocationSettings locationSettings = LocationSettings(
-    accuracy: LocationAccuracy.reduced,
-    distanceFilter: 20,
-  );
-  late StreamSubscription<Position> positionStream;
+  late LocationSettings locationSettings;
+  late ActivityDB adb;
+  StreamSubscription<Position>? positionStream;
 
   @override
   void initState() {
@@ -46,9 +55,30 @@ class _RunningPageState extends State<RunningPage>
 
   @override
   void dispose() {
-    timer.cancel();
+    countdownTimer.cancel();
+    activityTimer.cancel();
     positionStream?.cancel();
     super.dispose();
+  }
+
+  void initialize() {
+    timeLeft = COUNTDOWN_START;
+    startPosition = getStartPos();
+    activity = Activity(0, DateTime.now(), 0, Duration.zero, []);
+    isRunning = false;
+    countdownTimer = Timer(Duration.zero, () {});
+    activityTimer = Timer(Duration.zero, () {});
+    mapController = MapController();
+    locationSettings = LocationSettings(
+      accuracy: LOCATION_ACCURACY,
+      distanceFilter: DISTANCE_FILTER,
+    );
+    adb = ActivityDB();
+    if (box.get("ACTIVITYLIST") == null) {
+      adb.createInitialData();
+    } else {
+      adb.loadData();
+    }
   }
 
   Future<Position> getStartPos() async {
@@ -66,38 +96,35 @@ class _RunningPageState extends State<RunningPage>
     return Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.reduced)
         .then((value) {
+      LatLng coords = LatLng(value.latitude, value.longitude);
       marker = Marker(
           child: CustomMarker(),
           width: 80,
           height: 80,
           rotate: false,
-          point: LatLng(value.latitude, value.longitude));
+          point: coords);
       startCountdown();
+      activity.route.add(coords);
       return value;
     });
   }
 
-  void initialize() {
-    startPosition = getStartPos();
-    activity = Activity(0, DateTime.now(), 0, Duration.zero, []);
-    isRunning = false;
-    timer = Timer(Duration.zero, () {});
-    mapController = MapController();
-  }
-
   void startCountdown() {
-    Timer.periodic(Duration(seconds: 1), (timer) {
+    countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (!mounted) {
         return;
       }
-      setState(() {
-        if (timeLeft > 0) {
+      if (timeLeft > 0) {
+        setState(() {
           timeLeft--;
-        } else {
-          timer.cancel();
-          startActivity();
-        }
-      });
+        });
+      } else {
+        setState(() {
+          isRunning = true;
+        });
+        startActivity();
+        timer.cancel();
+      }
     });
   }
 
@@ -118,9 +145,10 @@ class _RunningPageState extends State<RunningPage>
                 FlutterMap(
                     mapController: mapController,
                     options: MapOptions(
+                      maxZoom: MAX_ZOOM,
                       initialCenter: LatLng(
                           snapshot.data!.latitude, snapshot.data!.longitude),
-                      initialZoom: 19,
+                      initialZoom: DEFAULT_ZOOM,
                     ),
                     children: [
                       TileLayer(
@@ -128,175 +156,38 @@ class _RunningPageState extends State<RunningPage>
                         urlTemplate:
                             'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       ),
+                      PolylineLayer(
+                        polylineCulling: true,
+                        polylines: [
+                          Polyline(
+                            strokeWidth: 10,
+                            points: activity.route,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ],
+                      ),
                       MarkerLayer(
                         markers: [marker],
                       ),
                     ]),
-                Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: Text(
-                      testPos,
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ),
                 Visibility(
+                    visible: timeLeft > 0,
+                    replacement: ActivityDisplay(
+                      isRunning: isRunning,
+                      onResume: handleResume,
+                      onPause: handlePause,
+                      onStop: handleStop,
+                      activity: activity,
+                    ),
                     child: Text(
                       timeLeft.toString(),
                       style: TextStyle(fontSize: 100),
-                    ),
-                    visible: timeLeft > 0,
-                    replacement: Positioned(
-                      bottom: 0,
-                      child: Container(
-                          alignment: Alignment.topCenter,
-                          height: height * 0.2,
-                          width: width * 0.85,
-                          margin: EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(top: 10),
-                                child: AutoSizeText(
-                                  activity.returnFormattedTime(),
-                                  style: TextStyle(
-                                      fontSize: 40,
-                                      color: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.color),
-                                ),
-                              ),
-                              Expanded(
-                                  child: Table(
-                                columnWidths: const <int, TableColumnWidth>{
-                                  0: FlexColumnWidth(1),
-                                  1: FlexColumnWidth(1),
-                                },
-                                children: [
-                                  TableRow(children: [
-                                    Center(
-                                      child: AutoSizeText("5:57",
-                                          style: TextStyle(
-                                            fontSize: 25,
-                                            color: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.color,
-                                            fontWeight: FontWeight.bold,
-                                          )),
-                                    ),
-                                    Center(
-                                      child: AutoSizeText("7.5",
-                                          style: TextStyle(
-                                            fontSize: 25,
-                                            color: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.color,
-                                            fontWeight: FontWeight.bold,
-                                          )),
-                                    )
-                                  ]),
-                                  TableRow(children: [
-                                    Center(
-                                      child: AutoSizeText("PACE",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
-                                              color: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium
-                                                  ?.color
-                                                  ?.withOpacity(.75))),
-                                    ),
-                                    Center(
-                                      child: AutoSizeText("DISTANCE",
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
-                                              color: Theme.of(context)
-                                                  .textTheme
-                                                  .titleMedium
-                                                  ?.color
-                                                  ?.withOpacity(.75))),
-                                    ),
-                                  ]),
-                                ],
-                              )),
-                            ],
-                          )),
                     )),
-                Positioned(
-                    top: height * 0.715,
-                    left: width * 0.67,
-                    child: Center(
-                      child: IconButton(
-                        style: IconButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        onPressed: () {},
-                        icon: Icon(
-                          size: 25,
-                          Icons.stop,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                      ),
-                    )),
-                Positioned(
-                    top: height * 0.715,
-                    left: width * 0.77,
-                    child: Center(
-                      child: IconButton(
-                        style: IconButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        onPressed: () {},
-                        icon: Icon(
-                          size: 25,
-                          Icons.pause,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                      ),
-                    )),
-                Positioned(
-                    height: height * 0.06,
-                    width: height * 0.06,
-                    top: 20,
-                    left: 20,
-                    child: Center(
-                      child: IconButton(
-                        style: IconButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        icon: Icon(
-                          size: 25,
-                          Icons.chevron_left,
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                      ),
-                    ))
+                BackButton()
               ],
             ),
           );
         } else {
-          print(snapshot.error);
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -305,28 +196,83 @@ class _RunningPageState extends State<RunningPage>
     ));
   }
 
+  Widget BackButton() {
+    return Positioned(
+        height: height * 0.06,
+        width: height * 0.06,
+        top: 20,
+        left: 20,
+        child: Center(
+          child: IconButton(
+            style: IconButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10))),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            icon: Icon(
+              size: 25,
+              Icons.chevron_left,
+              color: Theme.of(context).colorScheme.surface,
+            ),
+          ),
+        ));
+  }
+
   void startActivity() {
-    timer = Timer.periodic(Duration(milliseconds: 500), _onTick);
+    activityTimer = Timer.periodic(Duration(milliseconds: 500), _onTick);
     positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings)
             .listen((Position? position) {
-      setState(() {
-        testPos = position == null
-            ? 'null'
-            : '${position.latitude.toString()}, ${position.longitude.toString()}';
-      });
+      updatePosition(position);
     });
-    isRunning = true;
   }
 
   void _onTick(Timer timer) {
-    /*if (sd.obj.currentD.inMinutes >= 999) {
-      reset();
-    }*/
     if (isRunning) {
       setState(() {
         activity.time =
             Duration(milliseconds: 500 + activity.time.inMilliseconds);
+      });
+    }
+  }
+
+  void handlePause() {
+    if (!isRunning) return;
+    activityTimer.cancel();
+    positionStream?.cancel();
+    setState(() {
+      isRunning = false;
+    });
+  }
+
+  void handleResume() {
+    if (isRunning) return;
+    setState(() {
+      timeLeft = COUNTDOWN_RESUME;
+    });
+    startCountdown();
+  }
+
+  void handleStop() {
+    adb.activityList.add(activity);
+    adb.updateDatabase();
+    Navigator.of(context).pop();
+  }
+
+  void updatePosition(Position? pos) {
+    if (pos != null) {
+      LatLng coords = LatLng(pos.latitude, pos.longitude);
+      marker = Marker(
+          child: CustomMarker(),
+          width: 80,
+          height: 80,
+          rotate: false,
+          point: coords);
+      activity.route.add(coords);
+      setState(() {
+        mapController.move(coords, DEFAULT_ZOOM);
       });
     }
   }
