@@ -31,7 +31,7 @@ class Square extends StatelessWidget {
                 children: [
                   Icon(
                     icon,
-                    size: 40,
+                    size: 45,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   Text(

@@ -37,21 +37,21 @@ class _HomePageState extends State<HomePage> {
     } else {
       adb.loadData();
     }
-    loadData();
+    fetchData();
   }
 
-  void loadData() {
+  void fetchData() {
     if (!adb.isDBEmpty()) {
       lastActivity = adb.activityList.last;
       squares = [
         Square(
-            icon: Icons.timer,
-            name: "Time",
-            value: lastActivity.returnFormattedTime()),
-        Square(
             icon: Icons.route,
             name: "Distance",
             value: lastActivity.distance.toStringAsFixed(2)),
+        Square(
+            icon: Icons.timer,
+            name: "Time",
+            value: lastActivity.returnFormattedTime()),
         Square(
             icon: Icons.local_fire_department,
             name: "Calories",
@@ -63,8 +63,8 @@ class _HomePageState extends State<HomePage> {
       ];
     } else {
       squares = [
-        Square(icon: Icons.timer, name: "Time", value: "-"),
         Square(icon: Icons.route, name: "Distance", value: "-"),
+        Square(icon: Icons.timer, name: "Time", value: "-"),
         Square(icon: Icons.local_fire_department, name: "Calories", value: "-"),
         Square(icon: Icons.show_chart, name: "Pace", value: "-"),
       ];
@@ -154,10 +154,9 @@ class _HomePageState extends State<HomePage> {
         MaterialPageRoute(
           builder: (context) => const RunningPage(),
         ));
-    print(result);
     if (result) {
       setState(() {
-        loadData();
+        fetchData();
       });
     }
   }

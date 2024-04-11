@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import '../model/activity.dart';
@@ -32,7 +31,7 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
     width = MediaQuery.of(context).size.width;
     return Positioned(
         bottom: 0,
-        child: Container(
+        child: SizedBox(
           width: width * 0.85,
           height: height * 0.3,
           child: Stack(
@@ -51,9 +50,10 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                     children: [
                       Padding(
                         padding: EdgeInsets.only(top: 10),
-                        child: AutoSizeText(
+                        child: Text(
                           widget.activity.returnFormattedTime(),
                           style: TextStyle(
+                              fontWeight: FontWeight.bold,
                               fontSize: 40,
                               color: Theme.of(context)
                                   .textTheme
@@ -70,7 +70,7 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                         children: [
                           TableRow(children: [
                             Center(
-                              child: AutoSizeText(widget.activity.returnPace(),
+                              child: Text(widget.activity.returnPace(),
                                   style: TextStyle(
                                     fontSize: 25,
                                     color: Theme.of(context)
@@ -81,7 +81,7 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                                   )),
                             ),
                             Center(
-                              child: AutoSizeText(
+                              child: Text(
                                   widget.activity.distance > 0
                                       ? widget.activity.distance
                                           .toStringAsFixed(2)
@@ -98,7 +98,7 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                           ]),
                           TableRow(children: [
                             Center(
-                              child: AutoSizeText("PACE",
+                              child: Text("PACE",
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
@@ -109,7 +109,7 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                                           ?.withOpacity(.75))),
                             ),
                             Center(
-                              child: AutoSizeText("DISTANCE",
+                              child: Text("DISTANCE",
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
@@ -126,18 +126,23 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                   )),
               Positioned(
                   top: height * 0.045,
-                  right: width * 0.18,
-                  child: Center(child: StopButton())),
-              Positioned(
-                  top: height * 0.045,
                   right: width * 0.08,
-                  child: Center(
-                    child: Visibility(
-                      visible: widget.isRunning,
-                      replacement: ResumeButton(),
-                      child: PauseButton(),
+                  child: FittedBox(
+                    fit: BoxFit.fitHeight,
+                    child: Row(
+                      children: [
+                        StopButton(),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        Visibility(
+                          visible: widget.isRunning,
+                          replacement: ResumeButton(),
+                          child: PauseButton(),
+                        ),
+                      ],
                     ),
-                  )),
+                  ))
             ],
           ),
         ));

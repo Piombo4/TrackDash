@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:maps_toolkit/maps_toolkit.dart' as mp;
 import 'package:trackdash/model/activity.dart';
 import 'package:trackdash/utils/dialog_helper.dart';
 import 'package:trackdash/widgets/activity_display.dart';
@@ -31,7 +32,7 @@ class _RunningPageState extends State<RunningPage>
   final int COUNTDOWN_START = 5;
   final int COUNTDOWN_RESUME = 3;
   final int DISTANCE_FILTER = 25;
-  final LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.reduced;
+  final LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.medium;
   final box = Hive.box('activityBox');
 
   late Timer activityTimer;
@@ -275,6 +276,13 @@ class _RunningPageState extends State<RunningPage>
   void updatePosition(Position? pos) {
     if (pos != null) {
       LatLng coords = LatLng(pos.latitude, pos.longitude);
+      if (activity.route.isNotEmpty) {
+        activity.distance += (mp.SphericalUtil.computeDistanceBetween(
+                mp.LatLng(pos.latitude, pos.longitude),
+                mp.LatLng(activity.route.last.latitude,
+                    activity.route.last.longitude)) /
+            1000.0);
+      }
       marker = Marker(
           child: CustomMarker(),
           width: 80,
