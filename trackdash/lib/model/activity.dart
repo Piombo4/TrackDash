@@ -2,9 +2,13 @@ import 'package:latlong2/latlong.dart';
 
 class Activity {
   double distance;
+
   DateTime data;
+
   double calories;
+
   Duration time;
+
   List<LatLng> route;
 
   Activity(this.distance, this.data, this.calories, this.time, this.route);
@@ -25,6 +29,14 @@ class Activity {
     var result = "-";
     if (distance > 0) {
       result = (time.inMinutes / distance).toStringAsFixed(2);
+    }
+    return result;
+  }
+
+  String returnCalories() {
+    var result = "-";
+    if (calories > 0) {
+      result = calories.toStringAsFixed(2);
     }
     return result;
   }

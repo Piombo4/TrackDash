@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:trackdash/classes/activity.dart';
+import 'package:trackdash/model/activity.dart';
 
 class ActivityDB {
   List<Activity> activityList = [];

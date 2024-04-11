@@ -5,12 +5,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:trackdash/classes/activity.dart';
+import 'package:trackdash/model/activity.dart';
+import 'package:trackdash/utils/dialog_helper.dart';
 import 'package:trackdash/widgets/activity_display.dart';
 
-import '../classes/activity_DB.dart';
-import '../utils/dark_tile_builder.dart';
+import '../persistence/activity_DB.dart';
 import '../widgets/custom_marker.dart';
+import '../widgets/dark_tile_builder.dart';
 
 class RunningPage extends StatefulWidget {
   const RunningPage({Key? key}) : super(key: key);
@@ -64,7 +65,7 @@ class _RunningPageState extends State<RunningPage>
   void initialize() {
     timeLeft = COUNTDOWN_START;
     startPosition = getStartPos();
-    activity = Activity(0, DateTime.now(), 0, Duration.zero, []);
+    activity = Activity(0, DateTime.now(), -1, Duration.zero, []);
     isRunning = false;
     countdownTimer = Timer(Duration.zero, () {});
     activityTimer = Timer(Duration.zero, () {});
@@ -208,9 +209,13 @@ class _RunningPageState extends State<RunningPage>
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10))),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+            onPressed: () => customDialog(
+                context,
+                "Cancel activity",
+                "Do you want to cancel the current activity? ",
+                "Yes",
+                cancelActivity,
+                "No"),
             icon: Icon(
               size: 25,
               Icons.chevron_left,
@@ -218,6 +223,12 @@ class _RunningPageState extends State<RunningPage>
             ),
           ),
         ));
+  }
+
+  void cancelActivity() {
+    //To refactor
+    Navigator.pop(context);
+    Navigator.pop(context, false);
   }
 
   void startActivity() {
@@ -258,7 +269,7 @@ class _RunningPageState extends State<RunningPage>
   void handleStop() {
     adb.activityList.add(activity);
     adb.updateDatabase();
-    Navigator.of(context).pop();
+    Navigator.pop(context, true);
   }
 
   void updatePosition(Position? pos) {

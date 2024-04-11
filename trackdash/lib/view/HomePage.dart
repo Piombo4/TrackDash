@@ -1,46 +1,73 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:trackdash/classes/activity_DB.dart';
+import 'package:trackdash/persistence/activity_DB.dart';
 import 'package:trackdash/widgets/square.dart';
 
-import '../classes/activity.dart';
+import '../model/activity.dart';
 import 'RunningPage.dart';
 
-class FirstPage extends StatefulWidget {
-  const FirstPage({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<FirstPage> createState() => _FirstPageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _FirstPageState extends State<FirstPage> {
+class _HomePageState extends State<HomePage> {
   var height;
   var width;
 
   final box = Hive.box('activityBox');
   late ActivityDB adb = ActivityDB();
 
-  Activity? lastActivity;
+  late Activity lastActivity;
 
-  List<Widget> squares = [
-    Square(icon: Icons.local_fire_department, name: "Calories", value: "-"),
-    Square(icon: Icons.route, name: "Distance", value: "-"),
-    Square(icon: Icons.timer, name: "Time", value: "-"),
-    Square(icon: Icons.show_chart, name: "Pace", value: "-"),
-  ];
+  List<Widget> squares = [];
 
   @override
   void initState() {
     super.initState();
+    initialize();
+  }
 
+  void initialize() {
     if (box.get("ACTIVITYLIST") == null) {
       adb.createInitialData();
     } else {
       adb.loadData();
     }
+    loadData();
+  }
+
+  void loadData() {
     if (!adb.isDBEmpty()) {
       lastActivity = adb.activityList.last;
+      squares = [
+        Square(
+            icon: Icons.timer,
+            name: "Time",
+            value: lastActivity.returnFormattedTime()),
+        Square(
+            icon: Icons.route,
+            name: "Distance",
+            value: lastActivity.distance.toStringAsFixed(2)),
+        Square(
+            icon: Icons.local_fire_department,
+            name: "Calories",
+            value: lastActivity.returnCalories()),
+        Square(
+            icon: Icons.show_chart,
+            name: "Pace",
+            value: lastActivity.returnPace())
+      ];
+    } else {
+      squares = [
+        Square(icon: Icons.timer, name: "Time", value: "-"),
+        Square(icon: Icons.route, name: "Distance", value: "-"),
+        Square(icon: Icons.local_fire_department, name: "Calories", value: "-"),
+        Square(icon: Icons.show_chart, name: "Pace", value: "-"),
+      ];
     }
   }
 
@@ -122,10 +149,16 @@ class _FirstPageState extends State<FirstPage> {
   }
 
   void startRun() async {
-    await Navigator.push(
+    bool result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const RunningPage(),
         ));
+    print(result);
+    if (result) {
+      setState(() {
+        loadData();
+      });
+    }
   }
 }

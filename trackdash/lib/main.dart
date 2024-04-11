@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:trackdash/classes/latlng_adapter.dart';
-import 'package:trackdash/pages/FirstPage.dart';
+import 'package:trackdash/model/adapters/activity.g.dart';
+import 'package:trackdash/model/adapters/latlng_adapter.dart';
 import 'package:trackdash/utils/app_theme.dart';
+import 'package:trackdash/view/HomePage.dart';
+
+import 'model/adapters/datetime_adapter.dart';
+import 'model/adapters/duration_adapter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final directory = await getApplicationDocumentsDirectory();
   Hive.init(directory.path);
+  Hive.registerAdapter(ActivityAdapter());
+  Hive.registerAdapter(DurationAdapter());
   Hive.registerAdapter(LatLngAdapter());
+  Hive.registerAdapter(DateTimeAdapter());
   await Hive.openBox('activityBox');
   runApp(const MyApp());
 }
@@ -22,21 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: app_theme,
-      home: const MyHomePage(),
+      home: const HomePage(),
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return FirstPage();
   }
 }
