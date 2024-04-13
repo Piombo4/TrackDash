@@ -9,8 +9,7 @@ class ActivityDisplay extends StatefulWidget {
       required this.isRunning,
       required this.onPause,
       required this.onResume,
-      required this.onStop})
-      : super(key: key);
+      required this.onStop});
 
   final Activity activity;
   final bool isRunning;
@@ -43,7 +42,7 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                   margin: EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -131,63 +130,39 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                     fit: BoxFit.fitHeight,
                     child: Row(
                       children: [
-                        StopButton(),
+                        Button(Icons.stop, widget.onStop),
                         SizedBox(
-                          width: 10,
+                          width: 5,
                         ),
                         Visibility(
                           visible: widget.isRunning,
-                          replacement: ResumeButton(),
-                          child: PauseButton(),
+                          replacement:
+                              Button(Icons.play_arrow, widget.onResume),
+                          child: Button(Icons.pause, widget.onPause),
                         ),
                       ],
                     ),
-                  ))
+                  )),
+              Positioned(
+                child: Button(Icons.lock_rounded, () {}),
+                top: height * 0.045,
+                right: width * 0.67,
+              )
             ],
           ),
         ));
   }
 
-  Widget StopButton() {
+  Widget Button(IconData icon, Function()? onPressed) {
     return IconButton(
       style: IconButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.primary,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-      onPressed: widget.onStop,
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+      onPressed: onPressed,
       icon: Icon(
         size: 25,
-        Icons.stop,
-        color: Theme.of(context).colorScheme.surface,
-      ),
-    );
-  }
-
-  Widget PauseButton() {
-    return IconButton(
-      style: IconButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-      onPressed: widget.onPause,
-      icon: Icon(
-        size: 25,
-        Icons.pause,
-        color: Theme.of(context).colorScheme.surface,
-      ),
-    );
-  }
-
-  Widget ResumeButton() {
-    return IconButton(
-      style: IconButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-      onPressed: widget.onResume,
-      icon: Icon(
-        size: 25,
-        Icons.play_arrow,
+        icon,
         color: Theme.of(context).colorScheme.surface,
       ),
     );

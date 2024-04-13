@@ -6,18 +6,19 @@ class Square extends StatelessWidget {
   final String value;
 
   Square(
-      {Key? key, required this.icon, required this.name, required this.value});
+      {Key? key, required this.icon, required this.name, required this.value})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(10),
       onTap: () {},
       child: Container(
           margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 30, horizontal: 30),

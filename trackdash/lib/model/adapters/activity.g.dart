@@ -18,7 +18,7 @@ class ActivityAdapter extends TypeAdapter<Activity> {
       fields[1] as DateTime,
       fields[2] as double,
       fields[3] as Duration,
-      (fields[4] as List).cast<LatLng>(),
+      (fields[5] as List).cast<LatLng>(),
     );
   }
 
@@ -35,6 +35,7 @@ class ActivityAdapter extends TypeAdapter<Activity> {
       ..writeByte(3)
       ..write(obj.time)
       ..writeByte(4)
+      ..writeByte(5)
       ..write(obj.route);
   }
 

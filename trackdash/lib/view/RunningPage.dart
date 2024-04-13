@@ -7,8 +7,8 @@ import 'package:hive/hive.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:maps_toolkit/maps_toolkit.dart' as mp;
 import 'package:trackdash/model/activity.dart';
-import 'package:trackdash/utils/dialog_helper.dart';
 import 'package:trackdash/widgets/activity_display.dart';
+import 'package:trackdash/widgets/dialog_helper.dart';
 
 import '../persistence/activity_DB.dart';
 import '../widgets/custom_marker.dart';
@@ -31,8 +31,8 @@ class _RunningPageState extends State<RunningPage>
   final double MAX_ZOOM = 19.5;
   final int COUNTDOWN_START = 5;
   final int COUNTDOWN_RESUME = 3;
-  final int DISTANCE_FILTER = 25;
-  final LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.medium;
+  final int DISTANCE_FILTER = 20;
+  final LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.high;
   final box = Hive.box('activityBox');
 
   late Timer activityTimer;
@@ -61,73 +61,6 @@ class _RunningPageState extends State<RunningPage>
     activityTimer.cancel();
     positionStream?.cancel();
     super.dispose();
-  }
-
-  void initialize() {
-    timeLeft = COUNTDOWN_START;
-    startPosition = getStartPos();
-    activity = Activity(0, DateTime.now(), -1, Duration.zero, []);
-    isRunning = false;
-    countdownTimer = Timer(Duration.zero, () {});
-    activityTimer = Timer(Duration.zero, () {});
-    mapController = MapController();
-    locationSettings = LocationSettings(
-      accuracy: LOCATION_ACCURACY,
-      distanceFilter: DISTANCE_FILTER,
-    );
-    adb = ActivityDB();
-    if (box.get("ACTIVITYLIST") == null) {
-      adb.createInitialData();
-    } else {
-      adb.loadData();
-    }
-  }
-
-  Future<Position> getStartPos() async {
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-    return Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.reduced)
-        .then((value) {
-      LatLng coords = LatLng(value.latitude, value.longitude);
-      marker = Marker(
-          child: CustomMarker(),
-          width: 80,
-          height: 80,
-          rotate: false,
-          point: coords);
-      startCountdown();
-      activity.route.add(coords);
-      return value;
-    });
-  }
-
-  void startCountdown() {
-    countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        return;
-      }
-      if (timeLeft > 0) {
-        setState(() {
-          timeLeft--;
-        });
-      } else {
-        setState(() {
-          isRunning = true;
-        });
-        startActivity();
-        timer.cancel();
-      }
-    });
   }
 
   @override
@@ -178,7 +111,13 @@ class _RunningPageState extends State<RunningPage>
                       isRunning: isRunning,
                       onResume: handleResume,
                       onPause: handlePause,
-                      onStop: handleStop,
+                      onStop: () => DialogHelper.customDialog(
+                          context,
+                          "Terminate activity",
+                          "Do you want to terminate the current activity? ",
+                          "Yes",
+                          handleStop,
+                          "No"),
                       activity: activity,
                     ),
                     child: Text(
@@ -210,7 +149,7 @@ class _RunningPageState extends State<RunningPage>
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10))),
-            onPressed: () => customDialog(
+            onPressed: () => DialogHelper.customDialog(
                 context,
                 "Cancel activity",
                 "Do you want to cancel the current activity? ",
@@ -224,6 +163,53 @@ class _RunningPageState extends State<RunningPage>
             ),
           ),
         ));
+  }
+
+  Future<Position> getStartPos() async {
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    return Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.reduced)
+        .then((value) {
+      LatLng coords = LatLng(value.latitude, value.longitude);
+      marker = Marker(
+          child: CustomMarker(),
+          width: 80,
+          height: 80,
+          rotate: false,
+          point: coords);
+      startCountdown();
+      activity.route.add(coords);
+      return value;
+    });
+  }
+
+  void startCountdown() {
+    countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        return;
+      }
+      if (timeLeft > 0) {
+        setState(() {
+          timeLeft--;
+        });
+      } else {
+        setState(() {
+          isRunning = true;
+        });
+        startActivity();
+        timer.cancel();
+      }
+    });
   }
 
   void cancelActivity() {
@@ -271,6 +257,7 @@ class _RunningPageState extends State<RunningPage>
     adb.activityList.add(activity);
     adb.updateDatabase();
     Navigator.pop(context, true);
+    Navigator.pop(context, true);
   }
 
   void updatePosition(Position? pos) {
@@ -293,6 +280,26 @@ class _RunningPageState extends State<RunningPage>
       setState(() {
         mapController.move(coords, DEFAULT_ZOOM);
       });
+    }
+  }
+
+  void initialize() {
+    timeLeft = COUNTDOWN_START;
+    startPosition = getStartPos();
+    activity = Activity(0, DateTime.now(), -1, Duration.zero, []);
+    isRunning = false;
+    countdownTimer = Timer(Duration.zero, () {});
+    activityTimer = Timer(Duration.zero, () {});
+    mapController = MapController();
+    locationSettings = AndroidSettings(
+      accuracy: LOCATION_ACCURACY,
+      distanceFilter: DISTANCE_FILTER,
+    );
+    adb = ActivityDB();
+    if (box.get("ACTIVITYLIST") == null) {
+      adb.createInitialData();
+    } else {
+      adb.loadData();
     }
   }
 

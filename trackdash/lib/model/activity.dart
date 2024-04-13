@@ -13,11 +13,6 @@ class Activity {
 
   Activity(this.distance, this.data, this.calories, this.time, this.route);
 
-  @override
-  String toString() {
-    return 'Activity{distance: $distance, calories: $calories, time: $time, route: $route}';
-  }
-
   String returnFormattedTime() {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
     String twoDigitMinutes = twoDigits(time.inMinutes.remainder(60).abs());
@@ -27,7 +22,7 @@ class Activity {
 
   String returnPace() {
     var result = "-";
-    if (distance > 0) {
+    if (distance > 1) {
       result = (time.inMinutes / distance).toStringAsFixed(2);
     }
     return result;

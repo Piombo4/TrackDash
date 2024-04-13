@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                 width: width,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(10),
                 )),
             AutoSizeText(
               "Last Run",
@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                     elevation: 8,
                     minimumSize: Size(width, height * 0.08),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20))),
+                        borderRadius: BorderRadius.circular(10))),
                 onPressed: startRun,
                 child: AutoSizeText(
                   "Start Run",
@@ -149,15 +149,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void startRun() async {
-    bool result = await Navigator.push(
+    await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const RunningPage(),
-        ));
-    if (result) {
-      setState(() {
-        fetchData();
-      });
-    }
+        )).then((value) {
+      if (value is bool && value) {
+        setState(() {
+          fetchData();
+        });
+      }
+    });
   }
 }
