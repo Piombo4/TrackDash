@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trackdash/widgets/slidable_widget.dart';
 
 import '../model/activity.dart';
 
@@ -7,15 +8,21 @@ class ActivityDisplay extends StatefulWidget {
       {Key? key,
       required this.activity,
       required this.isRunning,
+      required this.isLocked,
       required this.onPause,
       required this.onResume,
-      required this.onStop});
+      required this.onStop,
+      required this.onLock,
+      required this.onUnlock});
 
   final Activity activity;
   final bool isRunning;
+  final bool isLocked;
   final VoidCallback onPause;
   final VoidCallback onResume;
   final VoidCallback onStop;
+  final VoidCallback onLock;
+  final VoidCallback onUnlock;
 
   @override
   State<ActivityDisplay> createState() => _ActivityDisplayState();
@@ -24,6 +31,13 @@ class ActivityDisplay extends StatefulWidget {
 class _ActivityDisplayState extends State<ActivityDisplay> {
   var height;
   var width;
+
+  @override
+  void initState() {
+    super.initState();
+    print(widget.isLocked);
+  }
+
   @override
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
@@ -50,7 +64,7 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                       Padding(
                         padding: EdgeInsets.only(top: 10),
                         child: Text(
-                          widget.activity.returnFormattedTime(),
+                          widget.activity.getTime(),
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 40,
@@ -69,7 +83,7 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                         children: [
                           TableRow(children: [
                             Center(
-                              child: Text(widget.activity.returnPace(),
+                              child: Text(widget.activity.getPace(),
                                   style: TextStyle(
                                     fontSize: 25,
                                     color: Theme.of(context)
@@ -123,31 +137,61 @@ class _ActivityDisplayState extends State<ActivityDisplay> {
                       )),
                     ],
                   )),
-              Positioned(
-                  top: height * 0.045,
-                  right: width * 0.08,
-                  child: FittedBox(
-                    fit: BoxFit.fitHeight,
-                    child: Row(
-                      children: [
-                        Button(Icons.stop, widget.onStop),
-                        SizedBox(
-                          width: 5,
+              Visibility(
+                  replacement: Positioned(
+                      top: height * 0.045,
+                      right: width * 0.08,
+                      child: FittedBox(
+                        fit: BoxFit.fitHeight,
+                        child: Row(
+                          children: [
+                            Button(Icons.lock_rounded, widget.onLock),
+                            SizedBox(
+                              width: width * 0.37,
+                            ),
+                            Button(Icons.stop, widget.onStop),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            Visibility(
+                              visible: widget.isRunning,
+                              replacement:
+                                  Button(Icons.play_arrow, widget.onResume),
+                              child: Button(Icons.pause, widget.onPause),
+                            ),
+                          ],
                         ),
-                        Visibility(
-                          visible: widget.isRunning,
-                          replacement:
-                              Button(Icons.play_arrow, widget.onResume),
-                          child: Button(Icons.pause, widget.onPause),
+                      )),
+                  visible: widget.isLocked,
+                  child: Positioned(
+                    top: height * 0.015,
+                    child: SizedBox(
+                      height: height * 0.06,
+                      width: width * 0.85,
+                      child: SlideAction(
+                        sliderButtonIconPadding: 11,
+                        sliderRotate: false,
+                        elevation: 0,
+                        text: "Unlock > > >",
+                        textStyle: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .color!
+                                .withOpacity(0.6)),
+                        outerColor: Theme.of(context).colorScheme.secondary,
+                        innerColor: Theme.of(context).colorScheme.primary,
+                        onSubmit: widget.onUnlock,
+                        borderRadius: 10,
+                        sliderButtonIcon: Icon(
+                          Icons.lock_open_rounded,
+                          color: Colors.black,
                         ),
-                      ],
+                      ),
                     ),
-                  )),
-              Positioned(
-                child: Button(Icons.lock_rounded, () {}),
-                top: height * 0.045,
-                right: width * 0.67,
-              )
+                  ))
             ],
           ),
         ));

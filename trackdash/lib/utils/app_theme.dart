@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 Map<int, Color> color = {
   50: Color.fromRGBO(186, 242, 70, 1.0),
@@ -13,6 +14,7 @@ Map<int, Color> color = {
   900: Color.fromRGBO(186, 242, 70, 1.0),
 };
 ThemeData app_theme = ThemeData(
+    fontFamily: GoogleFonts.roboto().fontFamily,
     textTheme: const TextTheme(
         titleMedium:
             TextStyle(color: Color(0xff1a1c1f), fontWeight: FontWeight.bold),
@@ -30,7 +32,7 @@ ThemeData app_theme = ThemeData(
             color: Colors.amber,
           ),
         )),
-    colorScheme: ColorScheme(
+    colorScheme: const ColorScheme(
       outlineVariant: Color.fromARGB(255, 66, 66, 66),
       scrim: Color(0xffbaf246),
       brightness: Brightness.dark,

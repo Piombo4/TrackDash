@@ -352,6 +352,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
+  google_fonts:
+    dependency: "direct main"
+    description:
+      name: google_fonts
+      sha256: b1ac0fe2832c9cc95e5e88b57d627c5e68c223b9657f4b96e1487aa9098c7b82
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.2.1"
   google_polyline_algorithm:
     dependency: transitive
     description:
@@ -401,13 +409,13 @@ packages:
     source: hosted
     version: "4.0.2"
   intl:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: intl
-      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      sha256: "910f85bce16fb5c6f614e117efa303e85a1731bb0081edf3604a2ae6e9a3cc91"
       url: "https://pub.dev"
     source: hosted
-    version: "0.19.0"
+    version: "0.17.0"
   io:
     dependency: transitive
     description:
@@ -733,6 +741,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  slide_to_act:
+    dependency: "direct main"
+    description:
+      name: slide_to_act
+      sha256: cd4ea5019754347d5a2b0375e802ad948610a0e233adfe51a9cc5b3a1fc3a43b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   source_span:
     dependency: transitive
     description:
@@ -959,4 +975,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.3.0 <4.0.0"
-  flutter: ">=3.18.0-18.0.pre.54"
+  flutter: ">=3.19.2"

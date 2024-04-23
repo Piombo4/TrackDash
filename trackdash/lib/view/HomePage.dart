@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:trackdash/persistence/activity_DB.dart';
+import 'package:trackdash/view/ActivitiesPage.dart';
 import 'package:trackdash/widgets/square.dart';
 
 import '../model/activity.dart';
@@ -45,28 +46,56 @@ class _HomePageState extends State<HomePage> {
       lastActivity = adb.activityList.last;
       squares = [
         Square(
-            icon: Icons.route,
-            name: "Distance",
-            value: lastActivity.distance.toStringAsFixed(2)),
+          icon: Icons.route,
+          name: "Distance (Km)",
+          value: lastActivity.getDistance(),
+          onTap: openActivities,
+        ),
         Square(
-            icon: Icons.timer,
-            name: "Time",
-            value: lastActivity.returnFormattedTime()),
+          icon: Icons.timer,
+          name: "Time",
+          value: lastActivity.getTime(),
+          onTap: openActivities,
+        ),
         Square(
-            icon: Icons.local_fire_department,
-            name: "Calories",
-            value: lastActivity.returnCalories()),
+          icon: Icons.local_fire_department,
+          name: "Calories",
+          value: lastActivity.getCalories(),
+          onTap: openActivities,
+        ),
         Square(
-            icon: Icons.show_chart,
-            name: "Pace",
-            value: lastActivity.returnPace())
+          icon: Icons.show_chart,
+          name: "Pace",
+          value: lastActivity.getPace(),
+          onTap: openActivities,
+        )
       ];
     } else {
       squares = [
-        Square(icon: Icons.route, name: "Distance", value: "-"),
-        Square(icon: Icons.timer, name: "Time", value: "-"),
-        Square(icon: Icons.local_fire_department, name: "Calories", value: "-"),
-        Square(icon: Icons.show_chart, name: "Pace", value: "-"),
+        Square(
+          icon: Icons.route,
+          name: "Distance (Km)",
+          value: "-",
+          onTap: openActivities,
+        ),
+        Square(
+          icon: Icons.timer,
+          name: "Time",
+          value: "-",
+          onTap: openActivities,
+        ),
+        Square(
+          icon: Icons.local_fire_department,
+          name: "Calories",
+          value: "-",
+          onTap: openActivities,
+        ),
+        Square(
+          icon: Icons.show_chart,
+          name: "Pace",
+          value: "-",
+          onTap: openActivities,
+        ),
       ];
     }
   }
@@ -136,6 +165,7 @@ class _HomePageState extends State<HomePage> {
                 child: AutoSizeText(
                   "Start Run",
                   style: TextStyle(
+                    fontWeight: FontWeight.bold,
                     fontSize: 20,
                     color: Theme.of(context).textTheme.titleMedium?.color,
                   ),
@@ -159,6 +189,18 @@ class _HomePageState extends State<HomePage> {
           fetchData();
         });
       }
+    });
+  }
+
+  void openActivities() async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ActivitiesPage(),
+        )).then((value) {
+      setState(() {
+        fetchData();
+      });
     });
   }
 }

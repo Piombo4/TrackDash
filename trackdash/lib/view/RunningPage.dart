@@ -5,9 +5,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:maps_toolkit/maps_toolkit.dart' as mp;
 import 'package:trackdash/model/activity.dart';
 import 'package:trackdash/widgets/activity_display.dart';
+import 'package:trackdash/widgets/back_button.dart';
 import 'package:trackdash/widgets/dialog_helper.dart';
 
 import '../persistence/activity_DB.dart';
@@ -31,8 +31,9 @@ class _RunningPageState extends State<RunningPage>
   final double MAX_ZOOM = 19.5;
   final int COUNTDOWN_START = 5;
   final int COUNTDOWN_RESUME = 3;
-  final int DISTANCE_FILTER = 20;
+  final int DISTANCE_FILTER = 0;
   final LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.high;
+
   final box = Hive.box('activityBox');
 
   late Timer activityTimer;
@@ -40,6 +41,7 @@ class _RunningPageState extends State<RunningPage>
   late int timeLeft;
   late Activity activity;
   late bool isRunning;
+  late bool isLocked;
   late Future<Position> startPosition;
   late Marker marker;
   late LocationPermission permission;
@@ -95,7 +97,7 @@ class _RunningPageState extends State<RunningPage>
                         polylineCulling: true,
                         polylines: [
                           Polyline(
-                            strokeWidth: 10,
+                            strokeWidth: 9,
                             points: activity.route,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -108,6 +110,7 @@ class _RunningPageState extends State<RunningPage>
                 Visibility(
                     visible: timeLeft > 0,
                     replacement: ActivityDisplay(
+                      isLocked: isLocked,
                       isRunning: isRunning,
                       onResume: handleResume,
                       onPause: handlePause,
@@ -119,12 +122,24 @@ class _RunningPageState extends State<RunningPage>
                           handleStop,
                           "No"),
                       activity: activity,
+                      onLock: lockScreen,
+                      onUnlock: unlockScreen,
                     ),
                     child: Text(
                       timeLeft.toString(),
                       style: TextStyle(fontSize: 100),
                     )),
-                BackButton()
+                Visibility(
+                    visible: !isLocked,
+                    child: Positioned(
+                      height: height * 0.06,
+                      width: height * 0.06,
+                      top: 20,
+                      left: 20,
+                      child: CustomBackButton(
+                        onTap: onBackButtonTap,
+                      ),
+                    ))
               ],
             ),
           );
@@ -137,32 +152,26 @@ class _RunningPageState extends State<RunningPage>
     ));
   }
 
-  Widget BackButton() {
-    return Positioned(
-        height: height * 0.06,
-        width: height * 0.06,
-        top: 20,
-        left: 20,
-        child: Center(
-          child: IconButton(
-            style: IconButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10))),
-            onPressed: () => DialogHelper.customDialog(
-                context,
-                "Cancel activity",
-                "Do you want to cancel the current activity? ",
-                "Yes",
-                cancelActivity,
-                "No"),
-            icon: Icon(
-              size: 25,
-              Icons.chevron_left,
-              color: Theme.of(context).colorScheme.surface,
-            ),
-          ),
-        ));
+  void initialize() {
+    activity = Activity(0, DateTime.now(), -1, Duration.zero, []);
+    countdownTimer = Timer(Duration.zero, () {});
+    activityTimer = Timer(Duration.zero, () {});
+    mapController = MapController();
+    adb = ActivityDB();
+    isRunning = false;
+    isLocked = false;
+    timeLeft = COUNTDOWN_START;
+    startPosition = getStartPos();
+    locationSettings = AndroidSettings(
+      distanceFilter: DISTANCE_FILTER,
+      forceLocationManager: true,
+      accuracy: LOCATION_ACCURACY,
+    );
+    if (box.get("ACTIVITYLIST") == null) {
+      adb.createInitialData();
+    } else {
+      adb.loadData();
+    }
   }
 
   Future<Position> getStartPos() async {
@@ -177,8 +186,8 @@ class _RunningPageState extends State<RunningPage>
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
-    return Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.reduced)
+    return await Geolocator.getCurrentPosition(
+            desiredAccuracy: LOCATION_ACCURACY)
         .then((value) {
       LatLng coords = LatLng(value.latitude, value.longitude);
       marker = Marker(
@@ -210,6 +219,16 @@ class _RunningPageState extends State<RunningPage>
         timer.cancel();
       }
     });
+  }
+
+  void onBackButtonTap() {
+    DialogHelper.customDialog(
+        context,
+        "Cancel activity",
+        "Do you want to cancel the current activity? ",
+        "Yes",
+        cancelActivity,
+        "No");
   }
 
   void cancelActivity() {
@@ -260,15 +279,36 @@ class _RunningPageState extends State<RunningPage>
     Navigator.pop(context, true);
   }
 
+  void lockScreen() {
+    if (isLocked) {
+      return;
+    }
+    setState(() {
+      isLocked = true;
+    });
+  }
+
+  void unlockScreen() {
+    if (!isLocked) {
+      return;
+    }
+    setState(() {
+      isLocked = false;
+    });
+  }
+
   void updatePosition(Position? pos) {
     if (pos != null) {
       LatLng coords = LatLng(pos.latitude, pos.longitude);
       if (activity.route.isNotEmpty) {
-        activity.distance += (mp.SphericalUtil.computeDistanceBetween(
-                mp.LatLng(pos.latitude, pos.longitude),
-                mp.LatLng(activity.route.last.latitude,
-                    activity.route.last.longitude)) /
-            1000.0);
+        double lastLat = activity.route.last.latitude;
+        double lastLon = activity.route.last.longitude;
+        double newDist = Geolocator.distanceBetween(
+            lastLat, lastLon, pos.latitude, pos.longitude);
+        if (newDist > 11) {
+          return;
+        }
+        activity.distance += newDist / 1000.0;
       }
       marker = Marker(
           child: CustomMarker(),
@@ -280,26 +320,6 @@ class _RunningPageState extends State<RunningPage>
       setState(() {
         mapController.move(coords, DEFAULT_ZOOM);
       });
-    }
-  }
-
-  void initialize() {
-    timeLeft = COUNTDOWN_START;
-    startPosition = getStartPos();
-    activity = Activity(0, DateTime.now(), -1, Duration.zero, []);
-    isRunning = false;
-    countdownTimer = Timer(Duration.zero, () {});
-    activityTimer = Timer(Duration.zero, () {});
-    mapController = MapController();
-    locationSettings = AndroidSettings(
-      accuracy: LOCATION_ACCURACY,
-      distanceFilter: DISTANCE_FILTER,
-    );
-    adb = ActivityDB();
-    if (box.get("ACTIVITYLIST") == null) {
-      adb.createInitialData();
-    } else {
-      adb.loadData();
     }
   }
 

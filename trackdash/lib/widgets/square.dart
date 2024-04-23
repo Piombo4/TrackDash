@@ -4,16 +4,21 @@ class Square extends StatelessWidget {
   final IconData icon;
   final String name;
   final String value;
+  final VoidCallback onTap;
 
   Square(
-      {Key? key, required this.icon, required this.name, required this.value})
+      {Key? key,
+      required this.icon,
+      required this.name,
+      required this.value,
+      required this.onTap})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(10),
-      onTap: () {},
+      onTap: onTap,
       child: Container(
           margin: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           decoration: BoxDecoration(
