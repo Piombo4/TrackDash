@@ -97,7 +97,7 @@ class _RunningPageState extends State<RunningPage>
                         polylineCulling: true,
                         polylines: [
                           Polyline(
-                            strokeWidth: 9,
+                            strokeWidth: 8,
                             points: activity.route,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -305,7 +305,7 @@ class _RunningPageState extends State<RunningPage>
         double lastLon = activity.route.last.longitude;
         double newDist = Geolocator.distanceBetween(
             lastLat, lastLon, pos.latitude, pos.longitude);
-        if (newDist > 11) {
+        if (newDist < 10) {
           return;
         }
         activity.distance += newDist / 1000.0;
