@@ -9,7 +9,7 @@ class LatLngAdapter extends TypeAdapter<LatLng> {
   void write(BinaryWriter writer, LatLng point) {
     writer
       ..write(point.latitude)
-      ..write(point.latitude);
+      ..write(point.longitude);
   }
 
   @override

@@ -11,6 +11,7 @@ import 'package:trackdash/widgets/back_button.dart';
 import 'package:trackdash/widgets/dialog_helper.dart';
 
 import '../persistence/activity_DB.dart';
+import '../persistence/settings.dart';
 import '../widgets/custom_marker.dart';
 import '../widgets/dark_tile_builder.dart';
 
@@ -26,13 +27,6 @@ class _RunningPageState extends State<RunningPage>
   MapController mapController = MapController();
   var height;
   var width;
-
-  final double DEFAULT_ZOOM = 19;
-  final double MAX_ZOOM = 19.5;
-  final int COUNTDOWN_START = 5;
-  final int COUNTDOWN_RESUME = 3;
-  final int DISTANCE_FILTER = 0;
-  final LocationAccuracy LOCATION_ACCURACY = LocationAccuracy.high;
 
   final box = Hive.box('activityBox');
 
@@ -82,10 +76,10 @@ class _RunningPageState extends State<RunningPage>
                 FlutterMap(
                     mapController: mapController,
                     options: MapOptions(
-                      maxZoom: MAX_ZOOM,
+                      maxZoom: Settings.MAX_ZOOM,
                       initialCenter: LatLng(
                           snapshot.data!.latitude, snapshot.data!.longitude),
-                      initialZoom: DEFAULT_ZOOM,
+                      initialZoom: Settings.DEFAULT_ZOOM,
                     ),
                     children: [
                       TileLayer(
@@ -160,12 +154,12 @@ class _RunningPageState extends State<RunningPage>
     adb = ActivityDB();
     isRunning = false;
     isLocked = false;
-    timeLeft = COUNTDOWN_START;
+    timeLeft = Settings.COUNTDOWN_START;
     startPosition = getStartPos();
     locationSettings = AndroidSettings(
-      distanceFilter: DISTANCE_FILTER,
+      distanceFilter: Settings.DISTANCE_FILTER,
       forceLocationManager: true,
-      accuracy: LOCATION_ACCURACY,
+      accuracy: Settings.LOCATION_ACCURACY,
     );
     if (box.get("ACTIVITYLIST") == null) {
       adb.createInitialData();
@@ -187,7 +181,7 @@ class _RunningPageState extends State<RunningPage>
           'Location permissions are permanently denied, we cannot request permissions.');
     }
     return await Geolocator.getCurrentPosition(
-            desiredAccuracy: LOCATION_ACCURACY)
+            desiredAccuracy: Settings.LOCATION_ACCURACY)
         .then((value) {
       LatLng coords = LatLng(value.latitude, value.longitude);
       marker = Marker(
@@ -267,7 +261,7 @@ class _RunningPageState extends State<RunningPage>
   void handleResume() {
     if (isRunning) return;
     setState(() {
-      timeLeft = COUNTDOWN_RESUME;
+      timeLeft = Settings.COUNTDOWN_RESUME;
     });
     startCountdown();
   }
@@ -318,7 +312,7 @@ class _RunningPageState extends State<RunningPage>
           point: coords);
       activity.route.add(coords);
       setState(() {
-        mapController.move(coords, DEFAULT_ZOOM);
+        mapController.move(coords, Settings.DEFAULT_ZOOM);
       });
     }
   }

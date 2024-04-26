@@ -130,13 +130,13 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                     maxLines: 1,
                   ),
                 ),
-                const Center(
+                Center(
                   child: AutoSizeText(
+                    adb.activityList[index].getPace(),
                     style: TextStyle(
                       fontSize: 12,
                     ),
                     maxLines: 1,
-                    "14.22 min/km",
                   ),
                 )
               ])

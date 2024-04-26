@@ -112,15 +112,13 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const ListTile(
+            ListTile(
+              trailing:
+                  IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
               contentPadding: EdgeInsets.zero,
               title: AutoSizeText(
                 "TrackDash",
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-              leading: Icon(
-                Icons.double_arrow_sharp,
-                size: 40,
               ),
             ),
             SizedBox(

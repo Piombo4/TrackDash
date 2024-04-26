@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:trackdash/model/adapters/activity.g.dart';
 import 'package:trackdash/model/adapters/latlng_adapter.dart';
-import 'package:trackdash/utils/app_theme.dart';
+import 'package:trackdash/persistence/app_theme.dart';
 import 'package:trackdash/view/HomePage.dart';
 
 import 'model/adapters/datetime_adapter.dart';
