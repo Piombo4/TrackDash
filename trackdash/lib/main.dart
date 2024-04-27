@@ -8,6 +8,7 @@ import 'package:trackdash/view/HomePage.dart';
 
 import 'model/adapters/datetime_adapter.dart';
 import 'model/adapters/duration_adapter.dart';
+import 'model/adapters/user_data.g.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,7 @@ void main() async {
   Hive.registerAdapter(DurationAdapter());
   Hive.registerAdapter(LatLngAdapter());
   Hive.registerAdapter(DateTimeAdapter());
+  Hive.registerAdapter(UserDataAdapter());
   await Hive.openBox('activityBox');
   runApp(const MyApp());
 }

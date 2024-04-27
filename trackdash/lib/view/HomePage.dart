@@ -1,9 +1,11 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:trackdash/model/user_data.dart';
 import 'package:trackdash/persistence/activity_DB.dart';
 import 'package:trackdash/view/ActivitiesPage.dart';
 import 'package:trackdash/widgets/square.dart';
+import 'package:trackdash/widgets/user_information.dart';
 
 import '../model/activity.dart';
 import 'RunningPage.dart';
@@ -25,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   late Activity lastActivity;
 
   List<Widget> squares = [];
+  late UserData userData;
 
   @override
   void initState() {
@@ -39,6 +42,11 @@ class _HomePageState extends State<HomePage> {
       adb.loadData();
     }
     fetchData();
+
+    userData = UserData.defaultUser();
+    if (box.get("USERDATA") != null) {
+      userData = box.get("USERDATA");
+    }
   }
 
   void fetchData() {
@@ -105,6 +113,7 @@ class _HomePageState extends State<HomePage> {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Padding(
         padding: const EdgeInsets.only(top: 45, left: 20, right: 20),
         child: Column(
@@ -113,8 +122,8 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              trailing:
-                  IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
+              trailing: IconButton(
+                  onPressed: openSettings, icon: Icon(Icons.settings)),
               contentPadding: EdgeInsets.zero,
               title: AutoSizeText(
                 "TrackDash",
@@ -200,5 +209,44 @@ class _HomePageState extends State<HomePage> {
         fetchData();
       });
     });
+  }
+
+  Future<void> openSettings() async {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: UserInformation(
+              height: userData.height,
+              weight: userData.weight,
+              age: userData.age,
+              gender: userData.gender,
+              onPressed: () {
+                Navigator.of(context).pop();
+                box.put("USERDATA", userData);
+              },
+              onGenderChanged: (String? value) {
+                if (value != null) {
+                  userData.gender = value;
+                }
+              },
+              onAgeChanged: (int? value) {
+                if (value != null) {
+                  userData.age = value;
+                }
+              },
+              onHeightChanged: (double? value) {
+                if (value != null) {
+                  userData.height = value;
+                }
+              },
+              onWeightChanged: (double? value) {
+                if (value != null) {
+                  userData.weight = value;
+                }
+              },
+            ),
+          );
+        });
   }
 }
