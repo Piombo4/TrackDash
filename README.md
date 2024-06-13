@@ -5,6 +5,7 @@
 A simple running tracker app. 
 
 ## Features
+Features currently implemented and future updates 
 Feature | 📱
 :------------ | :-------------
 Geolocator     | ✔️
