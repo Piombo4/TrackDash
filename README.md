@@ -22,6 +22,7 @@ Settings | ❌ | The button is there but there are no settings atm
 
 ## Built With
 IDE: Android Studio Dolphin | 1.3.2021
+</br>
 Framework: Flutter v3.22.0
 
 ## Release compilation
