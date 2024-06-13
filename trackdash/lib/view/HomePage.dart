@@ -1,6 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 import 'package:trackdash/model/user_data.dart';
 import 'package:trackdash/persistence/activity_DB.dart';
 import 'package:trackdash/view/ActivitiesPage.dart';
@@ -25,14 +27,41 @@ class _HomePageState extends State<HomePage> {
   late ActivityDB adb = ActivityDB();
 
   late Activity lastActivity;
+  List<Activity> weeklyActivity = [];
+  Activity fake = Activity(4, DateTime.now(), -1, Duration(minutes: 35), [
+    LatLng(44.4983999, 11.3272758),
+    LatLng(44.4858389, 11.3444696),
+    LatLng(44.485371, 11.3489764),
+    LatLng(44.4843223, 11.3559522),
+    LatLng(44.4845305, 11.3565958),
+    LatLng(44.4857252, 11.3581059)
+  ]);
 
   List<Widget> squares = [];
+  List<num> data = [];
   late UserData userData;
+  List<String> list = <String>['Distance', 'Calories'];
+  late String type;
 
   @override
   void initState() {
     super.initState();
     initialize();
+  }
+
+  void switchType(String value) {
+    switch (value) {
+      case "Distance":
+        for (Activity a in weeklyActivity) {
+          data.add(a.distance);
+        }
+        break;
+      case "Calories":
+        for (Activity a in weeklyActivity) {
+          data.add(a.calories);
+        }
+        break;
+    }
   }
 
   void initialize() {
@@ -42,7 +71,7 @@ class _HomePageState extends State<HomePage> {
       adb.loadData();
     }
     fetchData();
-
+    type = list.first;
     userData = UserData.defaultUser();
     if (box.get("USERDATA") != null) {
       userData = box.get("USERDATA");
@@ -52,6 +81,13 @@ class _HomePageState extends State<HomePage> {
   void fetchData() {
     if (!adb.isDBEmpty()) {
       lastActivity = adb.activityList.last;
+      for (Activity a in adb.activityList) {
+        if (DateTime.now().difference(a.data).inDays <= 7) {
+          weeklyActivity.add(a);
+        }
+      }
+      adb.activityList.add(fake);
+      adb.updateDatabase();
       squares = [
         Square(
           icon: Icons.route,
@@ -100,7 +136,7 @@ class _HomePageState extends State<HomePage> {
         ),
         Square(
           icon: Icons.show_chart,
-          name: "Pace",
+          name: "Pace (min/km)",
           value: "-",
           onTap: openActivities,
         ),
@@ -123,9 +159,9 @@ class _HomePageState extends State<HomePage> {
           children: [
             ListTile(
               trailing: IconButton(
-                  onPressed: openSettings, icon: Icon(Icons.settings)),
+                  onPressed: openSettings, icon: const Icon(Icons.settings)),
               contentPadding: EdgeInsets.zero,
-              title: AutoSizeText(
+              title: const AutoSizeText(
                 "TrackDash",
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
@@ -133,10 +169,42 @@ class _HomePageState extends State<HomePage> {
             SizedBox(
               height: height * 0.02,
             ),
-            AutoSizeText(
-              "Activity",
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-            ),
+            Row(children: [
+              const AutoSizeText(
+                "Weekly activity",
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              Spacer(),
+              DropdownButton<String>(
+                iconSize: 0,
+                isDense: true,
+                padding: EdgeInsets.zero,
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.displayLarge?.color),
+                value: type,
+                icon: const Icon(Icons.arrow_downward),
+                underline: Container(
+                  color: Theme.of(context).colorScheme.primary,
+                  height: 2,
+                ),
+                onChanged: (String? value) {
+                  setState(() {
+                    type = value!;
+                  });
+                },
+                items: list.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Center(
+                      child: Text(
+                        value,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              )
+            ]),
             Container(
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 height: height * 0.15,
@@ -144,8 +212,11 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(10),
+                ),
+                child: SfSparkLineChart(
+                  data: data,
                 )),
-            AutoSizeText(
+            const AutoSizeText(
               "Last Run",
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
             ),
