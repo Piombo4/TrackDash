@@ -24,6 +24,7 @@ Settings | ❌ | The button is there but there are no settings atm
 <div>
   <img src="trackdash/img/Screenshot_20240613_234512.png"  width="30%">
    &nbsp
+   &nbsp
 <img src="trackdash/img/Screenshot_20240614_090517.png"  width="30%" >
 </div>
 
