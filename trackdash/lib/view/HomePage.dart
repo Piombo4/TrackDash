@@ -2,7 +2,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 import 'package:trackdash/model/user_data.dart';
 import 'package:trackdash/persistence/activity_DB.dart';
 import 'package:trackdash/view/ActivitiesPage.dart';
@@ -27,9 +26,10 @@ class _HomePageState extends State<HomePage> {
   late ActivityDB adb = ActivityDB();
 
   late Activity lastActivity;
-  List<Activity> weeklyActivity = [];
   Activity fake = Activity(4, DateTime.now(), -1, Duration(minutes: 35), [
     LatLng(44.4983999, 11.3272758),
+    LatLng(44.4903436, 11.3296995),
+    LatLng(44.4865047, 11.3396067),
     LatLng(44.4858389, 11.3444696),
     LatLng(44.485371, 11.3489764),
     LatLng(44.4843223, 11.3559522),
@@ -38,7 +38,6 @@ class _HomePageState extends State<HomePage> {
   ]);
 
   List<Widget> squares = [];
-  List<num> data = [];
   late UserData userData;
   List<String> list = <String>['Distance', 'Calories'];
   late String type;
@@ -47,21 +46,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     initialize();
-  }
-
-  void switchType(String value) {
-    switch (value) {
-      case "Distance":
-        for (Activity a in weeklyActivity) {
-          data.add(a.distance);
-        }
-        break;
-      case "Calories":
-        for (Activity a in weeklyActivity) {
-          data.add(a.calories);
-        }
-        break;
-    }
   }
 
   void initialize() {
@@ -81,11 +65,7 @@ class _HomePageState extends State<HomePage> {
   void fetchData() {
     if (!adb.isDBEmpty()) {
       lastActivity = adb.activityList.last;
-      for (Activity a in adb.activityList) {
-        if (DateTime.now().difference(a.data).inDays <= 7) {
-          weeklyActivity.add(a);
-        }
-      }
+
       adb.activityList.add(fake);
       adb.updateDatabase();
       squares = [
@@ -206,16 +186,14 @@ class _HomePageState extends State<HomePage> {
               )
             ]),
             Container(
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                height: height * 0.15,
-                width: width,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: SfSparkLineChart(
-                  data: data,
-                )),
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              height: height * 0.15,
+              width: width,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             const AutoSizeText(
               "Last Run",
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
