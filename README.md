@@ -21,8 +21,8 @@ App Functionality in Background | ❌
 Settings | ❌ | The button is there but there are no settings atm
 
 ## Images
-![Image 1](/img/Screenshot_20240613_234512.png)
-![Image 2](/img/Screenshot_20240614_090517.png)
+![Image 1](trackdash/img/Screenshot_20240613_234512.png)
+![Image 2](trackdash/img/Screenshot_20240614_090517.png)
 
 
 ## Built With
