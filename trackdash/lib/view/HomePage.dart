@@ -1,7 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:trackdash/model/user_data.dart';
 import 'package:trackdash/persistence/activity_DB.dart';
 import 'package:trackdash/view/ActivitiesPage.dart';
@@ -26,16 +25,6 @@ class _HomePageState extends State<HomePage> {
   late ActivityDB adb = ActivityDB();
 
   late Activity lastActivity;
-  Activity fake = Activity(4, DateTime.now(), -1, Duration(minutes: 35), [
-    LatLng(44.4983999, 11.3272758),
-    LatLng(44.4903436, 11.3296995),
-    LatLng(44.4865047, 11.3396067),
-    LatLng(44.4858389, 11.3444696),
-    LatLng(44.485371, 11.3489764),
-    LatLng(44.4843223, 11.3559522),
-    LatLng(44.4845305, 11.3565958),
-    LatLng(44.4857252, 11.3581059)
-  ]);
 
   List<Widget> squares = [];
   late UserData userData;
@@ -66,8 +55,6 @@ class _HomePageState extends State<HomePage> {
     if (!adb.isDBEmpty()) {
       lastActivity = adb.activityList.last;
 
-      adb.activityList.add(fake);
-      adb.updateDatabase();
       squares = [
         Square(
           icon: Icons.route,
