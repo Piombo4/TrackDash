@@ -21,8 +21,8 @@ App Functionality in Background | ❌
 Settings | ❌ | The button is there but there are no settings atm
 
 ## Images
-<img src="trackdash/img/Screenshot_20240613_234512.png"  width="40%" >
-<img src="trackdash/img/Screenshot_20240614_090517"  width="40%" >
+<img src="trackdash/img/Screenshot_20240613_234512.png"  width="30%" >
+<img src="trackdash/img/Screenshot_20240614_090517.png"  width="30%" >
 
 
 
