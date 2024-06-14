@@ -20,6 +20,16 @@ Weekly activities graph | ❌
 App Functionality in Background | ❌
 Settings | ❌ | The button is there but there are no settings atm
 
+## Images
+<div>
+  <img src="trackdash/img/Screenshot_20240613_234512.png"  width="30%">
+   &nbsp
+   &nbsp
+<img src="trackdash/img/Screenshot_20240614_090517.png"  width="30%" >
+</div>
+
+
+
 ## Built With
 IDE: Android Studio Dolphin | 1.3.2021
 </br>
